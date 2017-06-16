@@ -1,0 +1,55 @@
+[
+  {
+    "customerId": "40.45859513--88.9651242",
+    "lat": 40.45859513,
+    "long": -88.9651242,
+    "damage": 0.7938573766985539,
+    "indicator": false,
+    "status": "NN", "images": ""
+  },
+  {
+    "customerId": "40.45590025--88.95336562",
+    "lat": 40.45590025,
+    "long": -88.95336562,
+    "damage": 0.7906169411941261,
+    "indicator": false,
+    "status": "NN",
+    "images": ""
+    },
+    {
+      "customerId": "40.45832992--88.95044839",
+      "lat": 40.45832992,
+      "long": -88.95044839,
+      "damage": 0.717838534165738,
+      "indicator": false,
+      "status": "NN",
+      "images": ""
+      },
+    {
+      "customerId": "40.45777149--88.96483726",
+      "lat": 40.45777149,
+      "long": -88.96483726,
+      "damage": 0.7813244700031812,
+      "indicator": false,
+      "status": "NN",
+      "images": ""
+      },
+      {
+        "customerId": "40.46452641--88.96318055",
+        "lat": 40.46452641,
+        "long": -88.96318055,
+        "damage": 0.7854006788883824,
+        "indicator": false,
+        "status": "NN",
+        "images": ""
+        },
+      {
+        "customerId": "40.4692151--88.9616277",
+        "long": 40.4692151,
+        "long": -88.9616277,
+        "damage": 0.7728425152813586,
+        "indicator": false,
+        "status": "NN",
+        "images": ""
+      }
+    ]

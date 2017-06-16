@@ -1,0 +1,579 @@
+<!doctype html>
+<html ng-app>
+<head>
+  <meta charset="utf-8">
+
+  <title>Dashboard UI</title>
+  <base href="/">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+  <!-- jQuery -->
+  <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+
+  <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<style>
+  #map{
+    height: 100%;
+
+  }
+
+  /*
+  #floating-panel{
+    position: absolute;
+    z-index: 5;
+    padding: 5px;
+    border: 3px, solid #999;
+    text-align: center;
+    font-family: "Helvetica Neue", Roboto, "Segoe UI", Calibri, sans-serif;
+    line-height: 30px;
+    padding-left: 10px;
+    left: 25%;
+    top: 10px;
+  }
+  */
+
+  /*make page fill window*/
+  html, body{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  blockquote.twitter-tweet {
+  	display: inline-block;
+  	font-family: "Helvetica Neue", Roboto, "Segoe UI", Calibri, sans-serif;
+  	font-size: 12px;
+  	font-weight: bold;
+  	line-height: 16px;
+  	border-color: #eee #ddd #bbb;
+  	border-radius: 5px;
+  	border-style: solid;
+  	border-width: 1px;
+  	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  	margin: 10px 5px;
+  	padding: 0 16px 16px 16px;
+  	max-width: 468px;
+  }
+
+  blockquote.twitter-tweet p {
+  	font-size: 16px;
+  	font-weight: normal;
+  	line-height: 20px;
+  }
+
+  blockquote.twitter-tweet a {
+  	color: inherit;
+  	font-weight: normal;
+  	text-decoration: none;
+  	outline: 0 none;
+  }
+
+  blockquote.twitter-tweet a:hover, blockquote.twitter-tweet a:focus {
+  	text-decoration: underline;
+  }
+
+  .navbar {
+  	height: 10%;
+  	border-bottom-right-radius: 2em;
+  	border-bottom-left-radius: 2em;
+  	background-color: #e1261c !important;
+  	background: linear-gradient(#c0392b, #e1261c, #e1261c, #c0392b);
+  	z-index: 3 !important;
+    margin-bottom: 0px;
+    margin-top: 0px;
+  }
+
+  li {
+  	list-style-type: none;
+  	margin: 25px;
+  }
+
+  img.avatar {
+  	border-radius: 5px;
+  	margin-top: 10px;
+  	height: 50px;
+  	width: 50px;
+  }
+
+  blockquote {
+  	background-color: white;
+  }
+
+  .response {
+  	background-color: #f2f2f2 !important;
+  }
+  </style>
+
+</head>
+
+<body>
+
+  <app-root>Loading...</app-root>
+
+  <div id="map-canvas"></div>
+
+
+
+<!-- Modal -->
+<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>
+<div id="myModal" class="modal fade" enabled role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-body">
+        <button class="close pull-right pull-up" data-dismiss="modal">Close</button>
+        <h2 style="text-align:center; border-bottom:1px black;">Jake Q. Mutual:</h2>
+          <table style="margin-top:10px;">
+            <th>
+              <td></td>
+              <td></td>
+            </th>
+            <tr>
+              <td>Safety: </td>
+              <td> <b><span style="color: green;">Confirmed</span></b></td>
+            </tr>
+            <tr>
+              <td>Condition: </td>
+              <td> <b><span style="color: red;">Unlivable</span></b></td>
+            </tr>
+          </table>
+          <h3 style="text-align:center; border-bottom:1px black;">Image Upload(s):</h3>
+          <style>
+            .imgClass:hover{
+              border: 3px red;
+            }
+          </style>
+          <img class="imgClass" src="http://lorempixel.com/output/animals-q-c-150-150-8.jpg"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+  <!--  Navbar -->
+	<!-- Static navbar -->
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed"
+					data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+					aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand">State Farm</a>
+			</div>
+			<!--/.nav-collapse -->
+		</div>
+		<!--/.container-fluid -->
+	</nav>
+
+  <div id="map"></div>
+  <script>
+
+    var heatmap, marker, markers, line, lineSymbol;
+
+    /**
+   * The ToggleHeatmapControl adds a control to the map that toggles heatmap visibility
+   * This constructor takes the control DIV as an argument.
+   */
+    function ToggleHeatmapControl(controlDiv, map) {
+
+      // Set CSS for the button border.
+      var controlUI = document.createElement('div');
+      controlUI.style.backgroundColor = '#fff';
+      controlUI.style.border = '2px solid #fff';
+      controlUI.style.borderRadius = '2px';
+      controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+      controlUI.style.cursor = 'pointer';
+      controlUI.style.marginBottom = '22px';
+      controlUI.style.marginTop = '12px';
+      controlUI.style.textAlign = 'center';
+      controlUI.title = 'Click to toggle the heatmap layer';
+
+      controlDiv.appendChild(controlUI);
+
+      // Set CSS for the control interior.
+      var controlText = document.createElement('div');
+      controlText.style.color = 'rgb(25,25,25)';
+      controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+      controlText.style.fontSize = '12px';
+      controlText.style.lineHeight = '30px';
+      controlText.style.paddingLeft = '5px';
+      controlText.style.paddingRight = '5px';
+      controlText.innerHTML = 'Toggle Heatmap';
+      controlUI.appendChild(controlText);
+
+      // Setup the click event listeners: toggle heatmap visibility
+      controlUI.addEventListener('click', function(){
+        heatmap.setMap(heatmap.getMap() ? null : map);
+      });
+
+    }
+
+    //Add a control to map interface that toggles visibility of Markers
+    //This constructor takes the a controlDiv as an arg
+    function ToggleMarkersControl(controlDiv, map) {
+
+      // Set CSS for the button border.
+      var controlUI = document.createElement('div');
+      controlUI.style.backgroundColor = '#fff';
+      controlUI.style.border = '2px solid #fff';
+      controlUI.style.borderRadius = '2px';
+      controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+      controlUI.style.cursor = 'pointer';
+      controlUI.style.marginBottom = '22px';
+      controlUI.style.marginTop = '12px';
+      controlUI.style.textAlign = 'center';
+      controlUI.title = 'Click to toggle the marker layer';
+
+      controlDiv.appendChild(controlUI);
+
+      // Set CSS for the control interior.
+      var controlText = document.createElement('div');
+      controlText.style.color = 'rgb(25,25,25)';
+      controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+      controlText.style.fontSize = '12px';
+      controlText.style.lineHeight = '30px';
+      controlText.style.paddingLeft = '5px';
+      controlText.style.paddingRight = '5px';
+      controlText.innerHTML = 'Toggle Markers';
+      controlUI.appendChild(controlText);
+
+      // Setup the click event listeners: toggle marker visibility
+      controlUI.addEventListener('click', function(){
+        markers.forEach(function(marker){
+          if(marker.getVisible()){
+            marker.setVisible(false);
+          }else{
+            marker.setVisible(true);
+          }
+        })
+      });
+
+    }
+
+    //Add a control to map interface that toggles visibility of storm animation
+    //This constructor takes the a controlDiv as an arg
+    function ToggleAnimationControl(controlDiv, map) {
+
+      // Set CSS for the button border.
+      var controlUI = document.createElement('div');
+      controlUI.style.backgroundColor = '#fff';
+      controlUI.style.border = '2px solid #fff';
+      controlUI.style.borderRadius = '2px';
+      controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+      controlUI.style.cursor = 'pointer';
+      controlUI.style.marginBottom = '22px';
+      controlUI.style.marginTop = '12px';
+      controlUI.style.textAlign = 'center';
+      controlUI.title = 'Click to toggle the animation layer';
+
+      controlDiv.appendChild(controlUI);
+
+      // Set CSS for the control interior.
+      var controlText = document.createElement('div');
+      controlText.style.color = 'rgb(25,25,25)';
+      controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+      controlText.style.fontSize = '12px';
+      controlText.style.lineHeight = '30px';
+      controlText.style.paddingLeft = '5px';
+      controlText.style.paddingRight = '5px';
+      controlText.innerHTML = 'Toggle Animation';
+      controlUI.appendChild(controlText);
+
+      // Setup the click event listeners: toggle marker visibility
+      controlUI.addEventListener('click', function(){
+        if(line.getVisible()){
+          line.setVisible(false);
+        }else{
+          line.setVisible(true);
+        }
+      });
+
+    }
+
+    function initMap(){
+
+      var map;
+
+      var bloomtown = new google.maps.LatLng(40.4830406, -88.9895822);
+
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: bloomtown,
+        zoom: 13,
+        mapTypeId: 'satellite'
+      });
+
+      var heatmapData = [];
+      markers = [];
+
+      fun = function(value){
+        //push data points onto the heatmap array
+        heatmapData.push({
+          location: new google.maps.LatLng(value.lat, value.long),
+          weight: value.damage
+        });
+
+        //make LatLng object
+        var lat = value.lat;
+        var long = value.long;
+        var latLng = new google.maps.LatLng(lat, long);
+        var status = value.status;
+        var damage = value.damage;
+
+        //set pinColor dynamically based on damage reported
+        var pinColor = "FFFFFF";
+
+        // set pinColor dynamically based on damage reported
+        switch(status) {
+          case "NN":
+            pinColor = "C8C8C8"
+            break;
+          case "NA":
+            pinColor = "3333CC"
+            break;
+            case "A":
+          if (damage < 0.5){
+            pinColor = "33FF00";
+            break;
+          }
+          case "A":
+            if (damage < 0.6){
+              pinColor = "33FF00";
+              break;
+          }
+          case "A":
+            if (damage < 0.7){
+              pinColor = "ffe100";
+              break;
+          }
+          case "A":
+            if (damage < 0.8){
+              pinColor = "ffb200";
+              break;
+            }
+            else if (damage < 0.9){
+              pinColor = "FF6600";
+              break;
+            }
+            else {
+              pinColor = "ef0202"
+              break;
+            }
+          }
+        // var pinColor = "C8C8C8";
+
+        var pinImage = new google.maps.MarkerImage(
+          "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" +
+          pinColor,
+          new google.maps.Size(21, 34),
+          new google.maps.Point(0,0),
+          new google.maps.Point(10, 34));
+
+        var pinShadow = new google.maps.MarkerImage(
+          "http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+          new google.maps.Size(40, 37),
+          new google.maps.Point(0, 0),
+          new google.maps.Point(12, 35));
+
+        //create marker
+        marker = new google.maps.Marker({
+          position: latLng,
+          icon: pinImage,
+          map: map,
+          animation: google.maps.Animation.DROP,
+          visible: true,
+        });
+
+        markers.push(marker);
+
+        google.maps.event.addListener(marker, 'click', function() {
+          $('#myModal').modal('show');
+        });
+      };
+
+      //iterate through customer data
+
+      var mult = 1;
+      var count2 = 0;
+      $.getJSON('customer_data.json', function(data){
+        $.each(data, function(index, value){
+
+          // if(count == 20){
+          //   new Promise(resolve => setTimeout(resolve, 20000));
+          //   console.log("Delayed");
+          //   count = 0;
+          // }
+          // count++;
+
+          var time_out = 1000 *  (count2 / 20.0);
+          setTimeout( function(){fun(value)}, time_out);
+          console.log("Delay");
+
+          count2++;
+          // console.log("Lat: " + value.lat + ", Long: " + value.long +
+          // ", status: " + value.status);
+
+
+        });
+      });
+
+      //construct heatmap
+      heatmap = new google.maps.visualization.HeatmapLayer({
+        data: heatmapData,
+        dissipating: true,
+      });
+
+      for(var i = 0; i < heatmapData.length; i++){
+
+        console.log(heatmapData[i].location.lat);
+      }
+
+      heatmap.setMap(map);
+
+      // Create the DIV to hold the control and call the ToggleHeatmapControl()
+      // constructor passing in this DIV.
+      var toggleHeatmapControlDiv = document.createElement('div');
+      var toggleHeatmapControl = new ToggleHeatmapControl(toggleHeatmapControlDiv, map);
+
+      toggleHeatmapControlDiv.index = 1;
+      map.controls[google.maps.ControlPosition.TOP_CENTER].push(toggleHeatmapControlDiv);
+
+      // Create the DIV to hold the control and call the ToggleMarkersControl()
+      // constructor passing in this DIV.
+      var toggleMarkersControlDiv = document.createElement('div');
+      var toggleMarkersControl = new ToggleMarkersControl(toggleMarkersControlDiv, map);
+
+      toggleMarkersControlDiv.index = 1;
+      map.controls[google.maps.ControlPosition.TOP_CENTER].push(toggleMarkersControlDiv);
+
+      // Create the DIV to hold the control and call the ToggleAnimationControl()
+      // constructor passing in this DIV.
+      var toggleAnimationControlDiv = document.createElement('div');
+      var toggleAnimationControl = new ToggleAnimationControl(toggleAnimationControlDiv, map);
+
+      toggleAnimationControlDiv.index = 1;
+      map.controls[google.maps.ControlPosition.TOP_CENTER].push(toggleAnimationControlDiv);
+
+      // Define the symbol, using one of the predefined paths ('CIRCLE')
+      // supplied by the Google Maps JavaScript API.
+      lineSymbol = {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 8,
+        strokeColor: '#393'
+      };
+
+      // Create the polyline and add the symbol to it via the 'icons' property.
+      line = new google.maps.Polyline({
+        path: [{lat: 40.487524, lng: -89.046065}, {lat: 40.479757, lng: -89.006673}, {lat: 40.469448 , lng: -88.994622}, {lat: 40.453678, lng:-88.952255}],
+        icons: [{
+          icon: lineSymbol,
+          offset: '100%'
+        }],
+        map: map
+      });
+
+
+
+      animateCircle(line);
+
+      // updatePoints();
+    }
+
+      // Use the DOM setInterval() function to change the offset of the symbol
+      // at fixed intervals.
+      function animateCircle(line) {
+          var count = 0;
+          window.setInterval(function() {
+            count = (count + 1) % 10000000000;
+
+            var icons = line.get('icons');
+            icons[0].offset = (count / 2) + '%';
+            line.set('icons', icons);
+        }, 100);
+      }
+
+      // var newStatuses = [];
+
+      // $.getJSON('customer_data.json', function(data){
+      //   $.each(data, function(index, value){
+      //     // console.log("status: " + value.status);
+      //     newStatuses.push(value.status);
+      //   });
+      // });
+
+      //number to keep track of points iterated over
+    //   var pointTracker = 0;
+    //
+    //   function updatePoints(){
+    //     for(var i = 0; i < 10; i++){
+    //       var status = markers[pointTracker].status;
+    //       markers[pointTracker].status = newStatuses[pointTracker];
+    //
+    //   // set pinColor dynamically based on damage reported
+    //   switch(status) {
+    //     case "NN":
+    //       pinColor = "C8C8C8"
+    //       break;
+    //     case "NA":
+    //       pinColor = "3333CC"
+    //       break;
+    //       case "A":
+    //     if (damage < 0.5){
+    //       pinColor = "33FF00";
+    //       break;
+    //     }
+    //     case "A":
+    //       if (damage < 0.6){
+    //         pinColor = "33FF00";
+    //         break;
+    //     }
+    //     case "A":
+    //       if (damage < 0.7){
+    //         pinColor = "ffe100";
+    //         break;
+    //     }
+    //     case "A":
+    //       if (damage < 0.8){
+    //         pinColor = "ffb200";
+    //         break;
+    //       }
+    //       else if (damage < 0.9){
+    //         pinColor = "FF6600";
+    //         break;
+    //       }
+    //       else {
+    //         pinColor = "ef0202"
+    //         break;
+    //       }
+    //     }
+    //   }
+    // }
+
+  </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCtojrxMf6p4Keoz1evPYMmUB55j4HOWbg&libraries=visualization&callback=initMap"></script>
+</body>
+</html>
