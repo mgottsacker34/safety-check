@@ -20,30 +20,25 @@
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-<!-- Latest compiled and minified JavaScript -->
+<!-- LeafletJS CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"
+   integrity="sha512-07I2e+7D8p6he1SIM+1twR5TIrhUQn9+I6yjqD53JQjFiMf8EtC93ty0/5vJTZGF8aAocvHYNEDJajGdNx1IsQ=="
+   crossorigin=""/>
+
+<!-- LeafletJS JS -->
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"
+   integrity="sha512-A7vV8IFfih/D732iSSKi20u/ooOfj/AGehOKq0f4vLT1Zr2Y+RX7C+w8A1gaSasGtRUZpF/NZgzSAu4/Gc41Lg=="
+   crossorigin=""></script>
+
+<!-- Latest compiled and minified JavaScript (Bootstrap) -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 
 <style>
-  #map{
+  #mapid{
     height: 100%;
 
   }
-
-  /*
-  #floating-panel{
-    position: absolute;
-    z-index: 5;
-    padding: 5px;
-    border: 3px, solid #999;
-    text-align: center;
-    font-family: "Helvetica Neue", Roboto, "Segoe UI", Calibri, sans-serif;
-    line-height: 30px;
-    padding-left: 10px;
-    left: 25%;
-    top: 10px;
-  }
-  */
 
   /*make page fill window*/
   html, body{
@@ -119,7 +114,7 @@
 
 </head>
 
-<body>
+<body onload="initMap()">
 
   <app-root>Loading...</app-root>
 
@@ -180,390 +175,115 @@
 		<!--/.container-fluid -->
 	</nav>
 
-  <div id="map"></div>
+  <div id="mapid"></div>
+
   <script>
+    var map;
+    var marker;
+    var markers = [];
 
-    var heatmap, marker, markers, line, lineSymbol;
+    addMarker = function(value){
 
-    /**
-   * The ToggleHeatmapControl adds a control to the map that toggles heatmap visibility
-   * This constructor takes the control DIV as an argument.
-   */
-    function ToggleHeatmapControl(controlDiv, map) {
 
-      // Set CSS for the button border.
-      var controlUI = document.createElement('div');
-      controlUI.style.backgroundColor = '#fff';
-      controlUI.style.border = '2px solid #fff';
-      controlUI.style.borderRadius = '2px';
-      controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
-      controlUI.style.cursor = 'pointer';
-      controlUI.style.marginBottom = '22px';
-      controlUI.style.marginTop = '12px';
-      controlUI.style.textAlign = 'center';
-      controlUI.title = 'Click to toggle the heatmap layer';
+      var lat = value.lat;
+      var long = value.long;
+      var status = value.status;
+      var damage = value.damage;
 
-      controlDiv.appendChild(controlUI);
+      var pinColor = "#FFFFFF";
 
-      // Set CSS for the control interior.
-      var controlText = document.createElement('div');
-      controlText.style.color = 'rgb(25,25,25)';
-      controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
-      controlText.style.fontSize = '12px';
-      controlText.style.lineHeight = '30px';
-      controlText.style.paddingLeft = '5px';
-      controlText.style.paddingRight = '5px';
-      controlText.innerHTML = 'Toggle Heatmap';
-      controlUI.appendChild(controlText);
+      //dynamically set pin color
+      switch(status){
+        case "NN":
+          pinColor = "#C8C8C8"
+          break;
+        case "NA":
+          pinColor = "#3333CC"
+          break;
+        case "A":
+          if (damage < 0.5){
+            pinColor = "#33FF00";
+            break;
+          }
+          else if(damage < 0.6){
+            pinColor = "#33FF00";
+            break;
+          }
+          else if(damage < 0.7){
+            pinColor = "#ffe100";
+            break;
+          }
+          else if(damage < 0.8){
+            pinColor = "#ffb200";
+            break;
+          }
+          else if (damage < 0.9){
+            pinColor = "#FF6600";
+            break;
+          }
+          else {
+            pinColor = "#ef0202"
+            break;
+          }
+        }
 
-      // Setup the click event listeners: toggle heatmap visibility
-      controlUI.addEventListener('click', function(){
-        heatmap.setMap(heatmap.getMap() ? null : map);
-      });
+        //styles for marker icons
+        var markerHtmlStyles = `
+          background-color: ${pinColor || '#583470'};
+          width: 2rem;
+          height: 2rem;
+          display: block;
+          left: -0.5rem;
+          top: -0.5rem;
+          position: relative;
+          border-radius: 3rem 3rem 0;
+          transform: rotate(45deg);
+          border: 1px solid #FFFFFF;`
+
+            var icon = L.divIcon({
+              iconAnchor: [0, 24],
+              // labelAnchor: [0, 0],
+              // popupAnchor: [0, -36],
+              html: `<span style="${markerHtmlStyles}" />`
+            });
+
+            marker = L.marker([lat, long], {icon:icon});
+
+            marker.addTo(map);
 
     }
 
-    //Add a control to map interface that toggles visibility of Markers
-    //This constructor takes the a controlDiv as an arg
-    function ToggleMarkersControl(controlDiv, map) {
 
-      // Set CSS for the button border.
-      var controlUI = document.createElement('div');
-      controlUI.style.backgroundColor = '#fff';
-      controlUI.style.border = '2px solid #fff';
-      controlUI.style.borderRadius = '2px';
-      controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
-      controlUI.style.cursor = 'pointer';
-      controlUI.style.marginBottom = '22px';
-      controlUI.style.marginTop = '12px';
-      controlUI.style.textAlign = 'center';
-      controlUI.title = 'Click to toggle the marker layer';
+    function initMap(){
+      map = new L.Map('mapid');
 
-      controlDiv.appendChild(controlUI);
+      //create tile layer with openstreetmaps
+      var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+      var osm = new L.TileLayer(osmUrl, {minZoom:0, maxZoom:18, attribution:osmAttrib});
 
-      // Set CSS for the control interior.
-      var controlText = document.createElement('div');
-      controlText.style.color = 'rgb(25,25,25)';
-      controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
-      controlText.style.fontSize = '12px';
-      controlText.style.lineHeight = '30px';
-      controlText.style.paddingLeft = '5px';
-      controlText.style.paddingRight = '5px';
-      controlText.innerHTML = 'Toggle Markers';
-      controlUI.appendChild(controlText);
+      //set map in bloomington and add OSM layer
+      map.setView([40.4830406, -88.9895822], 12);
+      map.addLayer(osm);
 
-      // Setup the click event listeners: toggle marker visibility
-      controlUI.addEventListener('click', function(){
-        markers.forEach(function(marker){
-          if(marker.getVisible()){
-            marker.setVisible(false);
-          }else{
-            marker.setVisible(true);
-          }
+      var count = 0;
+
+      //use JSON data to create markers on map
+      $.getJSON('customer_data.json', function(data){
+        $.each(data, function(index, value){
+
+          //set an increasing delay for each set of 20 points
+          var time_out = 500 * (count/20);
+          setTimeout( function(){addMarker(value)}, time_out);
+
+          // console.log("Delay");
+          count++;
         })
       });
 
     }
 
-    //Add a control to map interface that toggles visibility of storm animation
-    //This constructor takes the a controlDiv as an arg
-    function ToggleAnimationControl(controlDiv, map) {
-
-      // Set CSS for the button border.
-      var controlUI = document.createElement('div');
-      controlUI.style.backgroundColor = '#fff';
-      controlUI.style.border = '2px solid #fff';
-      controlUI.style.borderRadius = '2px';
-      controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
-      controlUI.style.cursor = 'pointer';
-      controlUI.style.marginBottom = '22px';
-      controlUI.style.marginTop = '12px';
-      controlUI.style.textAlign = 'center';
-      controlUI.title = 'Click to toggle the animation layer';
-
-      controlDiv.appendChild(controlUI);
-
-      // Set CSS for the control interior.
-      var controlText = document.createElement('div');
-      controlText.style.color = 'rgb(25,25,25)';
-      controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
-      controlText.style.fontSize = '12px';
-      controlText.style.lineHeight = '30px';
-      controlText.style.paddingLeft = '5px';
-      controlText.style.paddingRight = '5px';
-      controlText.innerHTML = 'Toggle Animation';
-      controlUI.appendChild(controlText);
-
-      // Setup the click event listeners: toggle marker visibility
-      controlUI.addEventListener('click', function(){
-        if(line.getVisible()){
-          line.setVisible(false);
-        }else{
-          line.setVisible(true);
-        }
-      });
-
-    }
-
-    function initMap(){
-
-      var map;
-
-      var bloomtown = new google.maps.LatLng(40.4830406, -88.9895822);
-
-      map = new google.maps.Map(document.getElementById('map'), {
-        center: bloomtown,
-        zoom: 13,
-        mapTypeId: 'satellite'
-      });
-
-      var heatmapData = [];
-      markers = [];
-
-      fun = function(value){
-        //push data points onto the heatmap array
-        heatmapData.push({
-          location: new google.maps.LatLng(value.lat, value.long),
-          weight: value.damage
-        });
-
-        //make LatLng object
-        var lat = value.lat;
-        var long = value.long;
-        var latLng = new google.maps.LatLng(lat, long);
-        var status = value.status;
-        var damage = value.damage;
-
-        //set pinColor dynamically based on damage reported
-        var pinColor = "FFFFFF";
-
-        // set pinColor dynamically based on damage reported
-        switch(status) {
-          case "NN":
-            pinColor = "C8C8C8"
-            break;
-          case "NA":
-            pinColor = "3333CC"
-            break;
-            case "A":
-          if (damage < 0.5){
-            pinColor = "33FF00";
-            break;
-          }
-          case "A":
-            if (damage < 0.6){
-              pinColor = "33FF00";
-              break;
-          }
-          case "A":
-            if (damage < 0.7){
-              pinColor = "ffe100";
-              break;
-          }
-          case "A":
-            if (damage < 0.8){
-              pinColor = "ffb200";
-              break;
-            }
-            else if (damage < 0.9){
-              pinColor = "FF6600";
-              break;
-            }
-            else {
-              pinColor = "ef0202"
-              break;
-            }
-          }
-        // var pinColor = "C8C8C8";
-
-        var pinImage = new google.maps.MarkerImage(
-          "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" +
-          pinColor,
-          new google.maps.Size(21, 34),
-          new google.maps.Point(0,0),
-          new google.maps.Point(10, 34));
-
-        var pinShadow = new google.maps.MarkerImage(
-          "http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
-          new google.maps.Size(40, 37),
-          new google.maps.Point(0, 0),
-          new google.maps.Point(12, 35));
-
-        //create marker
-        marker = new google.maps.Marker({
-          position: latLng,
-          icon: pinImage,
-          map: map,
-          animation: google.maps.Animation.DROP,
-          visible: true,
-        });
-
-        markers.push(marker);
-
-        google.maps.event.addListener(marker, 'click', function() {
-          $('#myModal').modal('show');
-        });
-      };
-
-      //iterate through customer data
-
-      var mult = 1;
-      var count2 = 0;
-      $.getJSON('customer_data.json', function(data){
-        $.each(data, function(index, value){
-
-          // if(count == 20){
-          //   new Promise(resolve => setTimeout(resolve, 20000));
-          //   console.log("Delayed");
-          //   count = 0;
-          // }
-          // count++;
-
-          var time_out = 1000 *  (count2 / 20.0);
-          setTimeout( function(){fun(value)}, time_out);
-          console.log("Delay");
-
-          count2++;
-          // console.log("Lat: " + value.lat + ", Long: " + value.long +
-          // ", status: " + value.status);
-
-
-        });
-      });
-
-      //construct heatmap
-      heatmap = new google.maps.visualization.HeatmapLayer({
-        data: heatmapData,
-        dissipating: true,
-      });
-
-      for(var i = 0; i < heatmapData.length; i++){
-
-        console.log(heatmapData[i].location.lat);
-      }
-
-      heatmap.setMap(map);
-
-      // Create the DIV to hold the control and call the ToggleHeatmapControl()
-      // constructor passing in this DIV.
-      var toggleHeatmapControlDiv = document.createElement('div');
-      var toggleHeatmapControl = new ToggleHeatmapControl(toggleHeatmapControlDiv, map);
-
-      toggleHeatmapControlDiv.index = 1;
-      map.controls[google.maps.ControlPosition.TOP_CENTER].push(toggleHeatmapControlDiv);
-
-      // Create the DIV to hold the control and call the ToggleMarkersControl()
-      // constructor passing in this DIV.
-      var toggleMarkersControlDiv = document.createElement('div');
-      var toggleMarkersControl = new ToggleMarkersControl(toggleMarkersControlDiv, map);
-
-      toggleMarkersControlDiv.index = 1;
-      map.controls[google.maps.ControlPosition.TOP_CENTER].push(toggleMarkersControlDiv);
-
-      // Create the DIV to hold the control and call the ToggleAnimationControl()
-      // constructor passing in this DIV.
-      var toggleAnimationControlDiv = document.createElement('div');
-      var toggleAnimationControl = new ToggleAnimationControl(toggleAnimationControlDiv, map);
-
-      toggleAnimationControlDiv.index = 1;
-      map.controls[google.maps.ControlPosition.TOP_CENTER].push(toggleAnimationControlDiv);
-
-      // Define the symbol, using one of the predefined paths ('CIRCLE')
-      // supplied by the Google Maps JavaScript API.
-      lineSymbol = {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 8,
-        strokeColor: '#393'
-      };
-
-      // Create the polyline and add the symbol to it via the 'icons' property.
-      line = new google.maps.Polyline({
-        path: [{lat: 40.487524, lng: -89.046065}, {lat: 40.479757, lng: -89.006673}, {lat: 40.469448 , lng: -88.994622}, {lat: 40.453678, lng:-88.952255}],
-        icons: [{
-          icon: lineSymbol,
-          offset: '100%'
-        }],
-        map: map
-      });
-
-
-
-      animateCircle(line);
-
-      // updatePoints();
-    }
-
-      // Use the DOM setInterval() function to change the offset of the symbol
-      // at fixed intervals.
-      function animateCircle(line) {
-          var count = 0;
-          window.setInterval(function() {
-            count = (count + 1) % 10000000000;
-
-            var icons = line.get('icons');
-            icons[0].offset = (count / 2) + '%';
-            line.set('icons', icons);
-        }, 100);
-      }
-
-      // var newStatuses = [];
-
-      // $.getJSON('customer_data.json', function(data){
-      //   $.each(data, function(index, value){
-      //     // console.log("status: " + value.status);
-      //     newStatuses.push(value.status);
-      //   });
-      // });
-
-      //number to keep track of points iterated over
-    //   var pointTracker = 0;
-    //
-    //   function updatePoints(){
-    //     for(var i = 0; i < 10; i++){
-    //       var status = markers[pointTracker].status;
-    //       markers[pointTracker].status = newStatuses[pointTracker];
-    //
-    //   // set pinColor dynamically based on damage reported
-    //   switch(status) {
-    //     case "NN":
-    //       pinColor = "C8C8C8"
-    //       break;
-    //     case "NA":
-    //       pinColor = "3333CC"
-    //       break;
-    //       case "A":
-    //     if (damage < 0.5){
-    //       pinColor = "33FF00";
-    //       break;
-    //     }
-    //     case "A":
-    //       if (damage < 0.6){
-    //         pinColor = "33FF00";
-    //         break;
-    //     }
-    //     case "A":
-    //       if (damage < 0.7){
-    //         pinColor = "ffe100";
-    //         break;
-    //     }
-    //     case "A":
-    //       if (damage < 0.8){
-    //         pinColor = "ffb200";
-    //         break;
-    //       }
-    //       else if (damage < 0.9){
-    //         pinColor = "FF6600";
-    //         break;
-    //       }
-    //       else {
-    //         pinColor = "ef0202"
-    //         break;
-    //       }
-    //     }
-    //   }
-    // }
-
   </script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD7mGdzb1nfXTCNNXj27whCogrpBURZj4&libraries=visualization&callback=initMap"></script>
+
 </body>
 </html>
