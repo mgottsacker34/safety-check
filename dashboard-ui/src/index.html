@@ -33,12 +33,53 @@
 <!-- Latest compiled and minified JavaScript (Bootstrap) -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
+<!-- Heatmap stuff -->
+<script src="leaflet-heat.js"></script>
 
 <style>
+
+#map-wrapper {
+    width: 100%;
+    height: 90%;
+    position: relative;
+    border: 1px solid black;
+
+}
+
+
+#button-wrapper {
+    position: absolute;
+    margin-top: 10px;
+    width: 100%;
+    z-index: 10000;
+    margin: 0 auto;
+}
+
   #mapid{
     height: 100%;
+    width: 100%;
+  }
+
+  #inner{
 
   }
+
+  .btnStyle {
+    background-color: #fff;
+    cursor: pointer;
+    border: 2px solid #fff;
+    border-radius: 2px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    margin-top: 10px;
+    text-align: center;
+    color: rgb(25,25,25);
+    font-family: "Roboto", "Arial", sans-serif;
+    font-size: 12px;
+    line-height: 30px;
+    padding-left: 5px;
+    padding-right: 5px;
+    z-index: 999999;
+}
 
   /*make page fill window*/
   html, body{
@@ -81,7 +122,7 @@
   }
 
   .navbar {
-  	height: 10%;
+  	height: 8%;
   	border-bottom-right-radius: 2em;
   	border-bottom-left-radius: 2em;
   	background-color: #e1261c !important;
@@ -168,21 +209,35 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand">State Farm</a>
+				<a class="navbar-brand">SF SafetyCheck</a>
 			</div>
 			<!--/.nav-collapse -->
 		</div>
 		<!--/.container-fluid -->
 	</nav>
 
-  <div id="mapid"></div>
+    <div id="mapid">
+
+    </div>
 
   <script>
     var map;
     var marker;
     var markers = [];
+    var markerLayerGroup = L.layerGroup();
 
-    addMarker = function(value){
+    function toggleMarkers(){
+      if(markers.length != 0){
+        markers.forEach(function(marker){
+          map.removeLayer(marker);
+        })
+      }
+      else{
+
+      }
+    }
+
+    function addMarker(value){
 
 
       var lat = value.lat;
@@ -248,23 +303,33 @@
             });
 
             marker = L.marker([lat, long], {icon:icon});
+            markers.push(marker);
 
-            marker.addTo(map);
-
+            marker.addTo(markerLayerGroup);
     }
 
 
     function initMap(){
-      map = new L.Map('mapid');
 
-      //create tile layer with openstreetmaps
-      var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-      var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-      var osm = new L.TileLayer(osmUrl, {minZoom:0, maxZoom:18, attribution:osmAttrib});
 
-      //set map in bloomington and add OSM layer
-      map.setView([40.4830406, -88.9895822], 12);
-      map.addLayer(osm);
+      // //create tile layer with openstreetmaps
+      // var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      // var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+      // var osm = new L.TileLayer(osmUrl, {minZoom:0, maxZoom:18, attribution:osmAttrib});
+      //
+      // //set map in bloomington and add OSM layer
+      // map.setView([40.4830406, -88.9895822], 12);
+      // map.addLayer(osm);
+
+      var mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+  			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+  			'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+  		mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+
+    	var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
+    		streets  = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr});
+
+
 
       var count = 0;
 
@@ -281,6 +346,25 @@
         })
       });
 
+      markerLayerGroup = L.layerGroup(markers);
+
+      map = new L.Map('mapid', {
+        center: [40.4830406, -88.9895822],
+        zoom: 12,
+        layers: [grayscale, markerLayerGroup]
+      });
+
+      var baseLayers = {
+        "Grayscale": grayscale,
+        "Streets": streets
+      };
+
+      var overlays = {
+        "Markers": markerLayerGroup
+      };
+
+
+      L.control.layers(baseLayers, overlays).addTo(map);
     }
 
   </script>
