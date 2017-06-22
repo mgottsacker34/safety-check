@@ -434,7 +434,7 @@
         $.each(data, function(index, value){
 
           //set an increasing delay for each set of 20 points
-          var time_out = 500 * (count/20);
+          var time_out = 550 * (count/20);
           setTimeout( function(){addMarker(value)}, time_out);
 
           // console.log("Delay");
@@ -454,6 +454,7 @@
         [40.479757, -89.006673],
         [40.469448, -88.994622],
         [40.453678, -88.952255],
+        [40.449678, -88.932255],
       ]);
 
       var animatedMarker = L.animatedMarker(line.getLatLngs(), {
@@ -467,7 +468,7 @@
 
       map = new L.Map('mapid', {
         center: [40.4830406, -88.9895822],
-        zoom: 12,
+        zoom: 13,
         layers: [grayscale, markerLayerGroup]
       });
 
