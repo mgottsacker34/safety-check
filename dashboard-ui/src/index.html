@@ -36,6 +36,12 @@
 <!-- Heatmap stuff -->
 <script src="/Leaflet.heat/dist/leaflet-heat.js"></script>
 
+<!-- Animation stuff -->
+<script src="/Leaflet.AnimatedMarker/src/AnimatedMarker.js"></script>
+
+<!-- Bounce animation stuff -->
+<script src="leaflet.bouncemarker/bouncemarker.js"></script>
+
 <style>
 
 #map-wrapper {
@@ -156,6 +162,8 @@
 
 <body onload="initMap()">
 
+<app-root></app-root>
+
 <!-- Modal -->
 
 <div id="myModal" class="modal fade" enabled role="dialog">
@@ -246,67 +254,154 @@
       //add point to heatData array
       heatData.push([lat, long, damage]);
 
-      var pinColor = "#FFFFFF";
+      // var pinColor = "#FFFFFF";
 
       //dynamically set pin color
-      switch(status){
-        case "NN":
-          pinColor = "#C8C8C8"
-          break;
-        case "NA":
-          pinColor = "#3333CC"
-          break;
-        case "A":
-          if (damage < 0.5){
-            pinColor = "#33FF00";
+      // switch(status){
+      //   case "NN":
+      //     pinColor = "#C8C8C8"
+      //     break;
+      //   case "NA":
+      //     pinColor = "#3333CC"
+      //     break;
+      //   case "A":
+      //     if (damage < 0.5){
+      //       pinColor = "#33FF00";
+      //       break;
+      //     }
+      //     else if(damage < 0.6){
+      //       pinColor = "#33FF00";
+      //       break;
+      //     }
+      //     else if(damage < 0.7){
+      //       pinColor = "#ffe100";
+      //       break;
+      //     }
+      //     else if(damage < 0.8){
+      //       pinColor = "#ffb200";
+      //       break;
+      //     }
+      //     else if (damage < 0.9){
+      //       pinColor = "#FF6600";
+      //       break;
+      //     }
+      //     else {
+      //       pinColor = "#ef0202"
+      //       break;
+      //     }
+      //   }
+
+        var pinUrl = "map-marker.svg";
+
+        switch(status){
+          case "NN":
+            pinUrl = "marker-nn.svg";
             break;
-          }
-          else if(damage < 0.6){
-            pinColor = "#33FF00";
+          case "NA":
+            pinUrl = "marker-na.svg";
             break;
+          case "A":
+            if (damage < 0.5){
+              pinUrl = "marker-a-6.svg";
+              break;
+            }
+            else if(damage < 0.6){
+              pinUrl = "marker-a-6.svg";
+              break;
+            }
+            else if(damage < 0.7){
+              pinUrl = "marker-a-7.svg";
+              break;
+            }
+            else if(damage < 0.8){
+              pinUrl = "marker-a-8.svg";
+              break;
+            }
+            else if (damage < 0.9){
+              pinUrl = "marker-a-9.svg";
+              break;
+            }
+            else {
+              pinUrl = "marker-a-10.svg";
+              break;
+            }
           }
-          else if(damage < 0.7){
-            pinColor = "#ffe100";
-            break;
-          }
-          else if(damage < 0.8){
-            pinColor = "#ffb200";
-            break;
-          }
-          else if (damage < 0.9){
-            pinColor = "#FF6600";
-            break;
-          }
-          else {
-            pinColor = "#ef0202"
-            break;
-          }
-        }
 
         //styles for marker icons
-        var markerHtmlStyles = `
-          background-color: ${pinColor || '#583470'};
-          width: 2rem;
-          height: 2rem;
-          display: block;
-          left: -0.5rem;
-          top: -0.5rem;
-          position: relative;
-          border-radius: 3rem 3rem 0;
-          transform: rotate(45deg);
-          border: 1px solid #FFFFFF;`
+        // var markerHtmlStyles = `
+        //   background-color: ${pinColor || '#583470'};
+        //   width: 2rem;
+        //   height: 2rem;
+        //   display: block;
+        //   left: -0.5rem;
+        //   top: -0.5rem;
+        //   position: relative;
+        //   border-radius: 3rem 3rem 0;
+        //   transform: rotate(45deg);
+        //   border: 1px solid #FFFFFF;`
 
-            var icon = L.divIcon({
-              iconAnchor: [0, 24],
+            var icon = L.icon({
+              // iconAnchor: [0, 24],
+              iconUrl: pinUrl,
               // labelAnchor: [0, 0],
               // popupAnchor: [0, -36],
-              html: `<span style="${markerHtmlStyles}" />`
+              //html: `<span style="${markerHtmlStyles}" />`
             });
 
-            marker = L.marker([lat, long], {icon:icon});
-            markers.push(marker);
+            //create the marker
+            marker = L.marker([lat, long], {
+              icon: icon,
+              bounceOnAdd: true,
+              bounceOnAddOptions: {duration: 800, height: 100},
+            });
 
+            var livable = true;
+            var liveText = "Yes";
+            var drivable = true;
+            var driveText = "Yes";
+            var safe = true;
+            var safeText = "Confirmed";
+
+            var nameText = "John Q. Khakis";
+
+            var iconsrc = "'disaster-photo-0.jpg'";
+
+            if(damage > 0.9){
+              livable = false;
+              drivable = false;
+              safe = false;
+              liveText = "No";
+              driveText = "No";
+              safeText = "Harmed";
+              nameText = "John C. Life";
+            }
+            else if(damage > 0.8){
+              livable = false;
+              liveText = "No";
+              driveText = "No";
+              nameText = "Jane B. Auto";
+            }
+            else if(damage > 0.6){
+              drivable = false;
+              driveText = "No";
+              nameText = "John A. Home";
+            }
+
+            var popupContent =
+              "<h4>" + nameText + "</h4>"
+              + "<b>Location: " + lat + ", " + long + "</b></br>"
+              + "</br>Safety: " + safeText
+              + "</br>Livable: " + liveText
+              + "</br>Drivable: " + driveText
+              + "</br><img src=" + iconsrc + "/>";
+            //add Leaflet modal to marker
+            marker.bindPopup(popupContent, {width: "auto"}).openPopup();
+
+            //add marker to array of markers
+            markers.push(marker);
+            //add marker to the marker layerGroup
             marker.addTo(markerLayerGroup);
+
     }
 
 
@@ -339,7 +434,7 @@
         $.each(data, function(index, value){
 
           //set an increasing delay for each set of 20 points
-          var time_out = 50 * (count/20);
+          var time_out = 500 * (count/20);
           setTimeout( function(){addMarker(value)}, time_out);
 
           // console.log("Delay");
@@ -349,6 +444,26 @@
 
       markerLayerGroup = L.layerGroup(markers);
       heatLayer = L.heatLayer(heatData, {radius: 100});
+
+      var lineIcon = L.icon({
+        iconUrl: 'tornado-icon.png'
+      });
+
+      var line = L.polyline([
+        [40.487524, -89.046065],
+        [40.479757, -89.006673],
+        [40.469448, -88.994622],
+        [40.453678, -88.952255],
+      ]);
+
+      var animatedMarker = L.animatedMarker(line.getLatLngs(), {
+        icon: lineIcon,
+        distance: 200,
+        interval: 280,
+        onEnd: function(){
+          animatedMarker.setOpacity(0);
+        }
+      });
 
       map = new L.Map('mapid', {
         center: [40.4830406, -88.9895822],
@@ -363,11 +478,14 @@
 
       var overlays = {
         "Markers": markerLayerGroup,
-        "Heatmap": heatLayer
+        "Heatmap": heatLayer,
+        "Animation": animatedMarker
       };
 
 
+
       L.control.layers(baseLayers, overlays).addTo(map);
+      map.addLayer(animatedMarker);
     }
 
   </script>
