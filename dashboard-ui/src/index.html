@@ -34,7 +34,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 <!-- Heatmap stuff -->
-<script src="leaflet-heat.js"></script>
+<script src="/Leaflet.heat/dist/leaflet-heat.js"></script>
 
 <style>
 
@@ -43,7 +43,6 @@
     height: 90%;
     position: relative;
     border: 1px solid black;
-
 }
 
 
@@ -56,7 +55,7 @@
 }
 
   #mapid{
-    height: 100%;
+    height: 92%;
     width: 100%;
   }
 
@@ -157,9 +156,6 @@
 
 <body onload="initMap()">
 
-  <app-root>Loading...</app-root>
-
-
 <!-- Modal -->
 
 <div id="myModal" class="modal fade" enabled role="dialog">
@@ -225,6 +221,8 @@
     var marker;
     var markers = [];
     var markerLayerGroup = L.layerGroup();
+    var heatLayer;
+    var heatData = [];
 
     function toggleMarkers(){
       if(markers.length != 0){
@@ -244,6 +242,9 @@
       var long = value.long;
       var status = value.status;
       var damage = value.damage;
+
+      //add point to heatData array
+      heatData.push([lat, long, damage]);
 
       var pinColor = "#FFFFFF";
 
@@ -338,7 +339,7 @@
         $.each(data, function(index, value){
 
           //set an increasing delay for each set of 20 points
-          var time_out = 500 * (count/20);
+          var time_out = 50 * (count/20);
           setTimeout( function(){addMarker(value)}, time_out);
 
           // console.log("Delay");
@@ -347,6 +348,7 @@
       });
 
       markerLayerGroup = L.layerGroup(markers);
+      heatLayer = L.heatLayer(heatData, {radius: 100});
 
       map = new L.Map('mapid', {
         center: [40.4830406, -88.9895822],
@@ -360,7 +362,8 @@
       };
 
       var overlays = {
-        "Markers": markerLayerGroup
+        "Markers": markerLayerGroup,
+        "Heatmap": heatLayer
       };
 
 
